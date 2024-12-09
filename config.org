@@ -16,6 +16,7 @@
   - [[#org-agenda][Org agenda]]
   - [[#org-notifications-not-working-for-now-][Org notifications (not working for now :()]]
   - [[#org-roam][Org Roam]]
+  - [[#org-roam-ui][Org Roam UI]]
   - [[#org-table-of-contents][Org Table of Contents]]
   - [[#org-latex-previews-shit-chatgpt-generated][Org latex previews (shit, chatgpt generated)]]
 - [[#pdf-view-for-all-pdf-files][PDF view for all pdf files]]
@@ -193,7 +194,7 @@ Function/variables describer
 
   (setq org-todo-keywords
         '((sequence "TODO(t)" "IN-PROGRESS(i)" "WAIT(w)" "HOLD(h)" "|" "DONE(d)" "CANCELED(c)")
-          (sequence "LOOP(L)" "MUNDANE(M)" "UNI(U)" "GYM(G)" "BIRTHDAY(B)" "HABIT(H)" "|")
+          (sequence "GYM(G)" "BIRTHDAY(B)" "HABIT(H)" "|")
           (sequence "[ ]" "[-]" "|" "[X]")
           )
         )
@@ -234,7 +235,7 @@ Function/variables describer
 ** Org Roam
 #+begin_src elisp
 (after! org
-  (setq org-roam-directory "~/Documents/Sync/Personal/OrgFiles/Roam")
+  (setq org-roam-directory "~/Documents/Sync/AGH/Roam")
 
 (map! :leader
       (:prefix ("n r" . "org-roam")
@@ -243,7 +244,20 @@ Function/variables describer
        :desc "Show graph"          "g" #'org-roam-graph
        :desc "Insert node"         "i" #'org-roam-node-insert
        :desc "Capture to node"     "n" #'org-roam-capture
-       :desc "Toggle roam buffer"  "r" #'org-roam-buffer-toggle)))
+       :desc "Toggle roam buffer"  "r" #'org-roam-buffer-toggle))
+(org-roam-db-autosync-mode)
+        )
+#+end_src
+** Org Roam UI
+#+begin_src elisp
+(use-package! org-roam-ui
+  :after org-roam
+  :hook (org-roam-mode . org-roam-ui-mode)
+  :config
+  (setq org-roam-ui-sync-theme t
+        org-roam-ui-follow t
+        org-roam-ui-update-on-save t
+        org-roam-ui-open-on-start t))
 #+end_src
 ** Org Table of Contents
 #+begin_src elisp
