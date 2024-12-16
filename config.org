@@ -17,7 +17,6 @@
   - [[#org-notifications-not-working-for-now-][Org notifications (not working for now :()]]
   - [[#org-roam][Org Roam]]
   - [[#org-roam-ui][Org Roam UI]]
-  - [[#org-table-of-contents][Org Table of Contents]]
   - [[#org-latex-previews-shit-chatgpt-generated][Org latex previews (shit, chatgpt generated)]]
 - [[#pdf-view-for-all-pdf-files][PDF view for all pdf files]]
 
@@ -36,23 +35,21 @@
 (setq display-line-numbers-type 'relative)
 
 (setq gc-cons-threshold (* 50 1000 1000))
-(defun efs/display-startup-time ()
+(defun display-startup-time ()
   (message "Emacs loaded in %s with %d garbage collections."
            (format "%.2f seconds"
                    (float-time
                      (time-subtract after-init-time before-init-time)))
            gcs-done))
 
-(add-hook 'emacs-startup-hook #'efs/display-startup-time) ; startup time (copied) function
-
+(add-hook 'emacs-startup-hook #'display-startup-time)
 (global-whitespace-mode -1) ;; global whitespace mode off
-
 (global-visual-line-mode 1) ;; word wrapping ????
-
 (beacon-mode 1) ;; blinking cursor while scrolling
 #+end_src
 
 * Bookmarks
+https://gitlab.com/dwt1/dotfiles/-/tree/master/.config/doom?ref_type=heads
 #+begin_src elisp
 (setq bookmark-default-file "~/.config/doom/bookmarks") ;;default folder for bookmarks
 
@@ -61,7 +58,8 @@
        :desc "List bookmarks"                          "L" #'list-bookmarks
        :desc "Set bookmark"                            "m" #'bookmark-set
        :desc "Delete bookmark"                         "M" #'bookmark-set
-       :desc "Save current bookmarks to bookmark file" "w" #'bookmark-save))
+       :desc "Save current bookmarks to bookmark file" "w" #'bookmark-save)
+      )
 ;;
 
 ;; A buffer can get out of sync with respect to its visited file on disk if that file is changed by another program. To keep it up to date, you can enable Auto Revert mode by typing M-x auto-revert-mode, or you can set it to be turned on globally with ‘global-auto-revert-mode’.  I have also turned on Global Auto Revert on non-file buffers, which is especially useful for ‘dired’ buffers.
@@ -70,8 +68,8 @@
 #+end_src
 
 * Ibuffer
+https://gitlab.com/dwt1/dotfiles/-/tree/master/.config/doom?ref_type=heads
 #+begin_src elisp
-;; Ibuffer filter options
 (evil-define-key 'normal ibuffer-mode-map
   (kbd "f c") 'ibuffer-filter-by-content
   (kbd "f d") 'ibuffer-filter-by-directory
@@ -80,47 +78,60 @@
   (kbd "f n") 'ibuffer-filter-by-name
   (kbd "f x") 'ibuffer-filter-disable
   (kbd "g h") 'ibuffer-do-kill-lines
-  (kbd "g H") 'ibuffer-update)
+  (kbd "g H") 'ibuffer-update
+  )
 #+end_src
 
 * Clippy
 Function/variables describer
+https://gitlab.com/dwt1/dotfiles/-/tree/master/.config/doom?ref_type=heads
 #+begin_src elisp
 ;; clippy-describe-function - Clippy describes function under point - SPC c h f
 ;; clippy-describe-variable - Clippy describes variable under point - SPC c h v
 (map! :leader
       (:prefix ("c h" . "Help info from Clippy")
        :desc "Clippy describes function under point" "f" #'clippy-describe-function
-       :desc "Clippy describes variable under point" "v" #'clippy-describe-variable))
+       :desc "Clippy describes variable under point" "v" #'clippy-describe-variable
+       )
+      )
 #+end_src
 
 * Insert date
+[[https://gitlab.com/dwt1/dotfiles/-/tree/master/.config/doom?ref_type=heads][dt's config]]
 #+begin_src elisp
 ;;Some custom functions to insert the date.  The function ‘insert-todays-date’ can be used one of three different ways: (1) just the keybinding without the universal argument prefix, (2) with one universal argument prefix, or (3) with two universal argument prefixes.  The universal argument prefix is ‘SPC-u’ in Doom Emacs (C-u in standard GNU Emacs).  The function ‘insert-any-date’ only outputs to one format, which is the same format as ‘insert-todays-date’ without a prefix.
-;;
-; dt config
 
 (defun dt/insert-todays-date (prefix)
   (interactive "P")
   (let ((format (cond
                  ((not prefix) "%A, %B %d, %Y")
                  ((equal prefix '(4)) "%m-%d-%Y")
-                 ((equal prefix '(16)) "%Y-%m-%d"))))
-    (insert (format-time-string format))))
+                 ((equal prefix '(16)) "%Y-%m-%d")
+                 )
+                )
+        )
+    (insert (format-time-string format))
+    )
+  )
 
 (require 'calendar)
 (defun dt/insert-any-date (date)
   "Insert DATE using the current locale."
-  (interactive (list (calendar-read-date)))
-  (insert (calendar-date-string date)))
+  (interactive (list (calendar-read-date))
+               )
+  (insert (calendar-date-string date))
+  )
 
 (map! :leader
       (:prefix ("i d" . "Insert date")
         :desc "Insert any date"    "a" #'dt/insert-any-date
-        :desc "Insert todays date" "t" #'dt/insert-todays-date))
+        :desc "Insert todays date" "t" #'dt/insert-todays-date
+        )
+      )
 #+end_src
 
 * Dired
+[[https://gitlab.com/dwt1/dotfiles/-/tree/master/.config/doom?ref_type=heads][dt's config]]
 #+begin_src elisp
 ;; dired
 (map! :leader
@@ -163,13 +174,15 @@ Function/variables describer
 (evil-define-key 'normal peep-dired-mode-map
   (kbd "j") 'peep-dired-next-file
   (kbd "k") 'peep-dired-prev-file)
+
 (add-hook 'peep-dired-hook 'evil-normalize-keymaps)
 #+end_src
 
 * Emojify
 #+begin_src elisp
 (use-package emojify
-  :hook (after-init . global-emojify-mode))
+  :hook (after-init . global-emojify-mode)
+  )
 #+end_src
 
 * Org Mode and prerequisities
@@ -199,28 +212,25 @@ Function/variables describer
           )
         )
   (setq org-todo-keyword-faces
-        '(("TODO" . (:foreground "green")) ("IN-PROGRESS" . "light blue")
+        '(("TODO" . (:foreground "light green")) ("IN-PROGRESS" . "blue")
           ("WAIT" . (:foreground "red" :weight bold-italic)) ("HOLD" . (:foreground "red"))
           ("DONE" . (:foreground "orange")) ("CANCELED" . (:foreground "orange"))
-          ("LOOP" . (:foreground "pink")) ("MUNDANE" . (:foreground "blue"))
-          ("UNI" . (:foreground "dark green" :weight bold)) ("GYM" . "purple")
           ("BIRTHDAY" . "yellow") ("HABIT" . (:foreground "purple" :weight bold))
           )
         )
-)
+  )
 #+end_src
 
 ** Org agenda
 #+begin_src elisp
 (after! org
-  (setq org-agenda-files
-        (append (directory-files-recursively "~/Documents/Sync/Personal/OrgFiles/" "\\.org$")
-                (directory-files-recursively "~/Documents/Sync/Personal/OrgFiles/Roam/" "\\.org$")
-                (directory-files-recursively "~/Documents/Sync/AGH/Roam/" "\\.org$"))
+  (setq org-agenda-files "~/Documents/Sync/Personal/OrgFiles/"
         org-agenda-start-day "+0d"
         org-agenda-skip-timestamp-if-done t
         org-agenda-skip-deadline-if-done t
-        org-agenda-skip-scheduled-if-done t))
+        org-agenda-skip-scheduled-if-done t
+        )
+  )
 
 #+end_src
 
@@ -233,64 +243,62 @@ Function/variables describer
 ;        )
 #+end_src
 ** Org Roam
+*** Org-roam-config.el
+Contains config for multiple org roam directories
 #+begin_src elisp
 (after! org
-  (setq org-roam-directory "~/Documents/Sync/Personal/OrgFiles/Roam"
-        org-roam-completion-everywhere t)
-    (setq org-roam-capture-templates
+  (load! "org-roam-config.el") ; private config
+  (setq org-roam-completion-everywhere t)
+  (setq org-roam-capture-templates
         '(("d" "default" plain
            "%?"
-           :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+date: %U\n")
+           :if-new (file+head "default-${slug}.org" "#+title: ${title}\n#+date: %U\n")
            :unnarrowed t)
-           ("b" "book notes" plain
+          ("b" "book notes" plain
             "\n* Source\n- Author: %^{Author}\n- Title: ${title}\n- Year: %^{Year}\n- Reading start: %^{Reading start}\n- Reading end: %^{Reading end}\n\n* Summary\n%?"
-            :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags: book\n")
+            :if-new (file+head "book-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags: book\n")
             :unnarrowed t)
-           ("p" "project" plain "\n* Goals\n%?\n\n* Tasks\n** TODO Add initial tasks\n\n* Dates\n"
-           :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags: project")
+          ("p" "project" plain "\n* Goals\n%?\n\n* Tasks\n** TODO Add initial tasks\n\n* Dates\n"
+           :if-new (file+head "project-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags: project")
            :unnarrowed t)
-           ("u" "uni" plain "\n* \n"
-            :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags: uni %?")
+          ("u" "uni" plain "\n* \n"
+            :if-new (file+head "uni-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags: uni %?")
             :unarrowed t)
+          )
+        )
+  (map! :leader
+        (:prefix ("n r" . "org-roam")
+         :desc "Completion at point" "c" #'completion-at-point
+         :desc "Find node"           "f" #'org-roam-node-find
+        ;:desc "Show graph"          "g" #'org-roam-graph ; using org-roam-ui package instead
+         :desc "Insert node"         "i" #'org-roam-node-insert
+         :desc "Capture to node"     "n" #'org-roam-capture
+         :desc "Toggle roam buffer"  "r" #'org-roam-buffer-toggle
+         :desc "Switch databases"    "s" #'my-switch-org-roam-directory
+         :desc "Open Org-roam UI"    "u" #'org-roam-ui-open
         )
         )
-
-(map! :leader
-      (:prefix ("n r" . "org-roam")
-       :desc "Completion at point" "c" #'completion-at-point
-       :desc "Find node"           "f" #'org-roam-node-find
-       ;:desc "Show graph"          "g" #'org-roam-graph
-       :desc "Insert node"         "i" #'org-roam-node-insert
-       :desc "Capture to node"     "n" #'org-roam-capture
-       :desc "Toggle roam buffer"  "r" #'org-roam-buffer-toggle)
-)
-(org-roam-db-autosync-mode)
-)
+  )
 #+end_src
+**** TODO org-roam-config.org literate config
+orui server socket for second directory
+**** TODO org-roam-config-template
 ** Org Roam UI
 #+begin_src elisp
-(use-package! org-roam-ui
-  :after org-roam
-  :hook (org-roam-mode . org-roam-ui-mode)
-  :config
-  (setq org-roam-ui-sync-theme t
-        org-roam-ui-follow t
-        org-roam-ui-update-on-save t
-        org-roam-ui-open-on-start t))
-#+end_src
-** Org Table of Contents
-#+begin_src elisp
-; Automatic table of contents is nice
-(if (require 'toc-org nil t)
-    (progn
-      (add-hook 'org-mode-hook 'toc-org-mode)))
-      ;;(add-hook 'markdown-mode-hook 'toc-org-mode)) ;markdown as well
-  ;(warn "toc-org not found")))
-#+end_src
+(after! org-roam
+  (setq org-roam-ui-sync-theme t)
+  (setq org-roam-ui-follow t)
+  (setq org-roam-ui-update-on-save t)
+  (setq org-roam-ui-open-on-start t)
 
+  ;;Activate Org-roam UI mode after loading
+  (with-eval-after-load 'org-roam-ui
+    (org-roam-ui-mode t)
+    )
+        )
+#+end_src
 ** Org latex previews (shit, chatgpt generated)
 #+begin_src elisp
-
 (setenv "PATH" (concat "/usr/local/texlive/2024/bin/x86_64-linux:" (getenv "PATH"))) ; setting up path to tex, bc emacs doesn't see latex on system
 (add-to-list 'exec-path "/usr/local/texlive/2024/bin/x86_64-linux")
 ;; Enable LaTeX previews within Org mode
