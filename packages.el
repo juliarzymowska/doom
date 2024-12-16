@@ -52,9 +52,9 @@
 
 ;inspirated by dt config:
 
-(package! flycheck-aspell)
-(package! calfw)
-(package! calfw-org)
+;(package! flycheck-aspell)
+;(package! calfw) ; todo
+;(package! calfw-org) ; todo
 ;;(package! dashboard)
 (package! dired-open)
 (package! dired-subtree)
@@ -82,9 +82,9 @@
 (package! olivetti) ; not used for now
 (package! nerd-icons) ; time for change to different icons 😉
 (package! nerd-icons-dired) ; time for change to different icons 😉
-(package! elfeed-org) ; not used for now
-(package! elfeed) ; not used for now
+;(package! elfeed-org) ; not used for now
+;(package! elfeed) ; not used for now
 (package! toc-org)
 (package! pdf-tools)
 (package! org-roam-ui)
-;(package! org-alert)
+;(package! org-alert) ; not working, todo
