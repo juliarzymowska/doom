@@ -1,5 +1,5 @@
-#+TITLE: Doom Emacs Config
-#+AUTHOR: Julia Rzymowska
+#+title: Doom Emacs Config
+#+author: Julia Rzymowska
 
 * Table of contents :TOC:
 - [[#enviroment][Enviroment]]
@@ -11,13 +11,16 @@
 - [[#insert-date][Insert date]]
 - [[#dired][Dired]]
 - [[#emojify][Emojify]]
+- [[#terminals][Terminals]]
+  - [[#vtermeshell][vterm/eshell]]
 - [[#org-mode-and-prerequisities][Org Mode and prerequisities]]
   - [[#org-defaults][Org defaults]]
   - [[#org-agenda][Org agenda]]
   - [[#org-notifications-not-working-for-now-][Org notifications (not working for now :()]]
   - [[#org-roam][Org Roam]]
   - [[#org-roam-ui][Org Roam UI]]
-  - [[#org-latex-previews-shit-chatgpt-generated][Org latex previews (shit, chatgpt generated)]]
+  - [[#org-latex][Org latex]]
+  - [[#org-remark-highlight][Org remark (highlight)]]
 - [[#pdf-view-for-all-pdf-files][PDF view for all pdf files]]
 
 * Enviroment
@@ -30,7 +33,7 @@
 #+end_src
 ** Others
 #+begin_src elisp
-(setq doom-theme 'doom-one)
+(setq doom-theme 'doom-gruvbox)
 ;(load-theme 'gotham t)
 (setq display-line-numbers-type 'relative)
 
@@ -185,11 +188,21 @@ https://gitlab.com/dwt1/dotfiles/-/tree/master/.config/doom?ref_type=heads
   )
 #+end_src
 
+* Terminals
+** vterm/eshell
+#+begin_src elisp
+(after! vterm
+  (add-hook 'vterm-mode-hook #'evil-emacs-state)
+  )
+(after! eshell
+  (add-hook 'eshell-mode-hook #'evil-emacs-state)
+  )
+#+end_src
 * Org Mode and prerequisities
 ** Org defaults
 #+begin_src elisp
 (after! org
-  (setq org-directory "~/Documents/Sync/Personal/OrgFiles/"
+  (setq org-directory "~/org/"
         org-default-notes-file (expand-file-name "notes.org" org-directory)
         org-ellipsis " ▼ "
         org-superstar-headline-bullets-list '("◉" "●" "○" "◆" "●" "○" "◆")
@@ -197,12 +210,17 @@ https://gitlab.com/dwt1/dotfiles/-/tree/master/.config/doom?ref_type=heads
         org-log-done 'time
         org-hide-emphasis-markers t)
   (setq org-capture-templates
-        `(("t" "Todo" entry (file ,(concat org-directory "/Capture/todo.org"))
-         "* TODO %?\n  %u\n  %a")
-        ("n" "Note" entry (file ,(concat org-directory "/Capture/notes.org"))
-         "* %?\n %U\n  %i\n  %a")
-        ("j" "Journal" entry (file ,(concat org-directory "/Capture/journal.org"))
-         "* Journal %U\n %a %?"))
+        ;`(("t" "Todo" entry (file ,(concat org-directory "/Capture/todo.org"))
+        ; "* TODO %?\n  %u\n  %a")
+        ;("n" "Note" entry (file ,(concat org-directory "/Capture/notes.org"))
+        ; "* %?\n %U\n  %i\n  %a")
+        ;("j" "Journal" entry (file ,(concat org-directory "/Capture/journal.org"))
+        ; "* Journal %U\n %a %?"))
+        '(("t" "TODO" entry (file ,(concat org-directory "Capture/todo.org"))
+           "#+date: %U\n* TODO %?")
+          ("n" "Empty note" entry (file ,(concat org-directory "Capture/note.org"))
+           "#+date: %U\n%?")
+                )
         )
 
   (setq org-todo-keywords
@@ -221,10 +239,11 @@ https://gitlab.com/dwt1/dotfiles/-/tree/master/.config/doom?ref_type=heads
   )
 #+end_src
 
-** Org agenda
+** DONE Org agenda
+CLOSED: [2025-02-12 Wed 23:46]
 #+begin_src elisp
 (after! org
-  (setq org-agenda-files "~/Documents/Sync/Personal/OrgFiles/"
+  (setq org-agenda-files (directory-files-recursively org-directory "\\.org$")
         org-agenda-start-day "+0d"
         org-agenda-skip-timestamp-if-done t
         org-agenda-skip-deadline-if-done t
@@ -243,47 +262,61 @@ https://gitlab.com/dwt1/dotfiles/-/tree/master/.config/doom?ref_type=heads
 ;        )
 #+end_src
 ** Org Roam
-*** Org-roam-config.el
-Contains config for multiple org roam directories
 #+begin_src elisp
 (after! org
-  (load! "org-roam-config.el") ; private config
+  ;(load! "org-roam-config.el") ; private config
+  (setq org-roam-directory "~/org/Roam/")
   (setq org-roam-completion-everywhere t)
   (setq org-roam-capture-templates
         '(("d" "default" plain
            "%?"
-           :if-new (file+head "default-${slug}.org" "#+title: ${title}\n#+date: %U\n")
+           :if-new (file+head "default-${slug}.org" "#+title: ${title}\n#+date: %U\n\n")
            :unnarrowed t)
-          ("b" "book notes" plain
-            "\n* Source\n- Author: %^{Author}\n- Title: ${title}\n- Year: %^{Year}\n- Reading start: %^{Reading start}\n- Reading end: %^{Reading end}\n\n* Summary\n%?"
-            :if-new (file+head "book-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags: book\n")
-            :unnarrowed t)
-          ("p" "project" plain "\n* Goals\n%?\n\n* Tasks\n** TODO Add initial tasks\n\n* Dates\n"
-           :if-new (file+head "project-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags: project")
+         ("p" "project" plain "\n* Goals\n%?\n\n* Tasks\n** TODO Add initial tasks\n\n* Dates\n"
+           :if-new (file+head "project-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags: project\n\n")
            :unnarrowed t)
-          ("u" "uni" plain "\n* \n"
-            :if-new (file+head "uni-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags: uni %?")
+          ("u" "uni" plain "\n* Summary\n $?"
+            :if-new (file+head "RoamAGH/uni-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags: uni f24\n\n")
             :unarrowed t)
+
+          ("c" "consumed media")
+          ("cb" "book notes" plain
+            "\n* Source\n- Author: %^{Author}\n- Title: ${title}\n- Year: %^{Year}\n- Reading start: %^{Reading start}\n- Reading end: %^{Reading end}\n\n* Summary\n%?"
+            :if-new (file+head "book-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags: book\n\n")
+            :unnarrowed t)
+          ("cp" "podacst" plain
+           "\n* Source\n - Author: %^{Author}\n - Title: ${title}\n - Link: %^{Link}\n\n* Summary\n%?"
+           :if-new (file+head "podcast-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags: podcast\n\n")
+           :unarrowed t)
+          ("cf" "film" plain
+           "\n* Source\n - Link: %^{Link}\n - Title: ${title}\n\n* Summary\n%?"
+           :if-new (file+head "film-${slug}.org" "#+title: ${title}\n #+date: %U\n#+filetags: film\n\n")
+           :unarrowed t)
+          )
+        )
+  (setq org-roam-dailies-capture-templates
+        '(("d" "default" entry "\n\n* %?"
+           :target (file+head "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>")
+           :unarrowed t
           )
         )
   (map! :leader
         (:prefix ("n r" . "org-roam")
          :desc "Completion at point" "c" #'completion-at-point
          :desc "Find node"           "f" #'org-roam-node-find
-        ;:desc "Show graph"          "g" #'org-roam-graph ; using org-roam-ui package instead
+         ;:desc "Show graph"          "g" #'org-roam-graph ; using org-roam-ui package instead
          :desc "Insert node"         "i" #'org-roam-node-insert
          :desc "Capture to node"     "n" #'org-roam-capture
          :desc "Toggle roam buffer"  "r" #'org-roam-buffer-toggle
-         :desc "Switch databases"    "s" #'my-switch-org-roam-directory
+         ;:desc "Switch databases"    "s" #'my-switch-org-roam-directory
          :desc "Open Org-roam UI"    "u" #'org-roam-ui-open
         )
         )
   )
 #+end_src
-**** TODO org-roam-config.org literate config
-orui server socket for second directory
-**** TODO org-roam-config-template
-** Org Roam UI
+
+** DONE Org Roam UI
+CLOSED: [2025-02-14 Fri 20:09]
 #+begin_src elisp
 (after! org-roam
   (setq org-roam-ui-sync-theme t)
@@ -295,51 +328,76 @@ orui server socket for second directory
   (with-eval-after-load 'org-roam-ui
     (org-roam-ui-mode t)
     )
-        )
+  )
 #+end_src
-** Org latex previews (shit, chatgpt generated)
+** Org latex
 #+begin_src elisp
-(setenv "PATH" (concat "/usr/local/texlive/2024/bin/x86_64-linux:" (getenv "PATH"))) ; setting up path to tex, bc emacs doesn't see latex on system
+(setenv "PATH" (concat "/usr/local/texlive/2024/bin/x86_64-linux:" (getenv "PATH")))
 (add-to-list 'exec-path "/usr/local/texlive/2024/bin/x86_64-linux")
-;; Enable LaTeX previews within Org mode
+
+;; Enable LaTeX previews in Org mode
 (after! org
-  (setq org-highlight-latex-and-related '(latex entities))
-  (setq org-startup-with-latex-preview t)  ;; Automatically preview LaTeX on startup
-  (setq org-latex-create-formula-image-program 'dvisvgm) ;; Use dvisvgm for high-quality previews
-  (setq org-preview-latex-default-process 'dvisvgm)
-  ;; LaTeX export settings
-  (setq org-latex-pdf-process
-        '("latexmk -f -pdf %f")) ;; Use latexmk to build PDF
+  (setq org-highlight-latex-and-related '(latex entities)
+        org-startup-with-latex-preview t
+        org-latex-create-formula-image-program 'dvisvgm
+        org-preview-latex-default-process 'dvisvgm
+        )
+  ;(setq org-latex-compiler "pdflatex")  ;; Or "pdflatex", "xelatex"
+  ;(setq org-latex-pdf-process
+   ;     '("latexmk -shell-escape -pdflatex -interaction=nonstopmode -output-directory=~/exports %f")
+    ;    )
 
- (setq org-preview-latex-process-alist
-      '((dvisvgm :programs ("latex" "dvisvgm")
-                 :description "dvi > svg"
-                 :message "you need to install the programs: latex and dvisvgm."
-                 :use-xcolor t
-                 :image-input-type "dvi"
-                 :image-output-type "svg"
-                 :image-size-adjust (1.7 . 1.5)
-                 :latex-compiler ("latex -interaction nonstopmode -output-directory %o %f")
-                 :image-converter ("dvisvgm %f -n -b min -c %S -o %O")
-                 :post-clean: nil
-                 :latex-header nil
-                        )))
+    ;; enviroments helper
+  (add-hook 'LaTeX-mode-hook #'turn-on-cdlatex)   ; with AUCTeX LaTeX mode
+  (add-hook 'latex-mode-hook #'turn-on-cdlatex)   ; with Emacs latex mode
+  ;; Configure LaTeX preview with dvisvgm
+  (setq org-preview-latex-process-alist
+        '((dvisvgm :programs ("latex" "dvisvgm")
+                   :description "dvi > svg"
+                   :message "You need to install latex and dvisvgm."
+                   :use-xcolor t
+                   :image-input-type "dvi"
+                   :image-output-type "svg"
+                   :image-size-adjust (1.5 . 1.2)
+                   :latex-compiler ("latex -interaction nonstopmode -output-directory %o %f")
+                   :image-converter ("dvisvgm %f -n -b min -c %S -o %O")
+                   :post-clean nil))))
 
-  (with-eval-after-load 'ox-latex
-        (add-to-list 'org-latex-classes
-                '("myarticle"
-                        "\\documentclass{article}
-                        \\usepackage[utf8]{inputenc}
-                        \\usepackage{amsmath, amssymb}
-                        \\usepackage{graphicx}"
-                        ("\\section{%s}" . "\\section*{%s}")
-                        ("\\subsection{%s}" . "\\subsection*{%s}")
-                        ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-                        ("\\paragraph{%s}" . "\\paragraph*{%s}")
-                        ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))))
-)
+;; Custom LaTeX class for Org exports
+(with-eval-after-load 'ox-latex
+  (add-to-list 'org-latex-classes
+               '("myarticle"
+                 "\\documentclass[8pt]{article}
+                 \\usepackage[utf8]{inputenc}
+                 \\usepackage[margin=1in]{geometry}
+                 \\usepackage{amsmath,amssymb}
+                 \\usepackage{graphicx}
+                 \\usepackage{xcolor}"
+                 ("\\section{%s}" . "\\section*{%s}")
+                 ("\\subsection{%s}" . "\\subsection*{%s}")
+                 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+                 ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))))
 #+end_src
 
+** Org remark (highlight)
+#+begin_src elisp
+(after! org
+  (org-remark-global-tracking-mode +1)
+  ;; Key-bind `org-remark-mark' to global-map so that you can call it
+  ;; globally before the library is loaded.
+
+  (define-key global-map (kbd "C-c n m") #'org-remark-mark)
+
+  ;; The rest of keybidings are done only on loading `org-remark'
+  (with-eval-after-load 'org-remark
+    (define-key org-remark-mode-map (kbd "C-c n o") #'org-remark-open)
+    (define-key org-remark-mode-map (kbd "C-c n ]") #'org-remark-view-next)
+    (define-key org-remark-mode-map (kbd "C-c n [") #'org-remark-view-prev)
+    (define-key org-remark-mode-map (kbd "C-c n r") #'org-remark-remove)
+    (define-key org-remark-mode-map (kbd "C-c n d") #'org-remark-delete))
+  )
+#+end_src
 * PDF view for all pdf files
 #+begin_src elisp
 (add-to-list 'auto-mode-alist '("\\.pdf\\'" . pdf-view-mode))

@@ -87,4 +87,6 @@
 (package! toc-org)
 (package! pdf-tools)
 (package! org-roam-ui)
+(package! org-remark)
+(package! cdlatex)
 ;(package! org-alert) ; not working, todo
