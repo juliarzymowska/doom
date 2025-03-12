@@ -3,7 +3,6 @@
 
 ;; To install a package with Doom you must declare them here and run 'doom sync'
 ;; on the command line, then restart Emacs for the changes to take effect -- or
-;; use 'M-x doom/reload'.
 
 
 ;; To install SOME-PACKAGE from MELPA, ELPA or emacsmirror:
@@ -49,44 +48,32 @@
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
 ;; (unpin! t)
 
+(package! org :recipe
+  (:host nil :repo "https://git.tecosaur.net/mirrors/org-mode.git" :remote "mirror" :fork
+         (:host nil :repo "https://git.tecosaur.net/tec/org-mode.git" :branch "dev" :remote "tecosaur")
+         :files
+         (:defaults "etc")
+         :build t :pre-build
+         (with-temp-file "org-version.el"
+           (require 'lisp-mnt)
+           (let
+               ((version
+                 (with-temp-buffer
+                   (insert-file-contents "lisp/org.el")
+                   (lm-header "version")))
+                (git-version
+                 (string-trim
+                  (with-temp-buffer
+                    (call-process "git" nil t nil "rev-parse" "--short" "HEAD")
+                    (buffer-string)))))
+             (insert
+              (format "(defun org-release () \"The release version of Org.\" %S)\n" version)
+              (format "(defun org-git-version () \"The truncate git commit hash of Org mode.\" %S)\n" git-version)
+              "(provide 'org-version)\n"))))
+  :pin nil)
 
-;inspirated by dt config:
-
-;(package! flycheck-aspell)
-;(package! calfw) ; todo
-;(package! calfw-org) ; todo
-;;(package! dashboard)
-(package! dired-open)
-(package! dired-subtree)
-;;(package! dirvish)
-;;(package! dmenu)
-;;(package! ednc)
-(package! emojify)
-(package! evil-tutor)
-;;(package! exwm)
-;;(package! imenu-list)
-;;(package! ivy-posframe)
-;;(package! mw-thesaurus)
-(package! org-auto-tangle)
-;;(package! org-web-tools)
-;;(package! ox-gemini)
-(package! peep-dired) ; ??
-;;(package! password-store)
-;;(package! rainbow-mode)
-;;(package! resize-window)
-;;(package! tldr)
-;;(package! wc-mode)
-(package! beacon)
-(package! clippy)
-;;(package! minimap)
-(package! olivetti) ; not used for now
-(package! nerd-icons) ; time for change to different icons 😉
-(package! nerd-icons-dired) ; time for change to different icons 😉
-;(package! elfeed-org) ; not used for now
-;(package! elfeed) ; not used for now
-(package! toc-org)
-(package! pdf-tools)
+(unpin! org)
+(unpin! org-roam)
 (package! org-roam-ui)
-(package! org-remark)
-(package! cdlatex)
-;(package! org-alert) ; not working, todo
+(package! beacon)
+(package! evil-tutor)
