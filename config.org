@@ -1,114 +1,146 @@
-#+title: doom emacs config
-#+startup: showall
+#+title: Doom Config
+#+date:<2025-05-14 Wed>
 
-* Table of Contents :TOC:
-- [[#appearance][Appearance]]
-  - [[#fonts][Fonts]]
-  - [[#theme][Theme]]
-  - [[#autostart][Autostart]]
-  - [[#other-visuals][Other visuals]]
-  - [[#beacon-cursor][Beacon cursor]]
-- [[#bookmarks][Bookmarks]]
-- [[#dired][Dired]]
-- [[#latex][Latex]]
-- [[#org][Org]]
+* Table of contents :TOC:
+- [[#basic][Basic]]
+  - [[#visuals][Visuals]]
+  - [[#bookmarks][Bookmarks]]
+  - [[#dired][Dired]]
+  - [[#others][Others]]
+- [[#org-mode][Org mode]]
   - [[#defaults][Defaults]]
   - [[#org-agenda][Org Agenda]]
-  - [[#org-pretty-pretty][Org Pretty (+pretty)]]
-  - [[#org-download-dragndrop][Org Download (+dragndrop)]]
-  - [[#org-roam][Org Roam]]
-  - [[#org-roam-ui][Org Roam UI]]
   - [[#org-latex-previews][Org Latex Previews]]
-- [[#pdf][PDF]]
+  - [[#org-roam][Org Roam]]
 
-* Appearance
-** Fonts
+* Basic
+** Visuals
+*** Fonts
 #+begin_src elisp
 (setq
  doom-font (font-spec :family "JetBrainsMono Nerd Font Mono" :size 14 :weight 'regular)
  doom-big-font (font-spec :family "JetBrainsMono Nerd Font" :size 24)
  doom-variable-pitch-font (font-spec :family "Sans Serif" :size 14)
  )
-
 #+end_src
-** Theme
+*** Theme
 #+begin_src elisp
-(setq
+(setq!
  doom-theme 'doom-gruvbox
  )
 #+end_src
-** Autostart
-#+begin_src elisp
-(setq
- gc-cons-threshold (* 50 1000 1000)
- )
-(defun display-startup-time ()
-  (message "Emacs loaded in %s with %d garbage collections."
-           (format "%.2f seconds"
-                   (float-time
-                     (time-subtract after-init-time before-init-time)))
-           gcs-done)
-  )
-
-(add-hook 'emacs-startup-hook #'display-startup-time)
-#+end_src
-** Other visuals
-#+begin_src elisp
-(global-whitespace-mode -1)
-(global-visual-line-mode 1)
-(+global-word-wrap-mode 1)
-(setq
- display-line-numbers 'relative
- )
-#+end_src
-** Beacon cursor
+*** Beacon cursor
 #+begin_src elisp
 (use-package! beacon
   :config
   (beacon-mode 1)
+  )
+#+end_src
+*** Other visuals
+#+begin_src elisp
+(global-whitespace-mode -1)
+(global-visual-line-mode t)
+(+global-word-wrap-mode +1)
+
+(setq
+ display-line-numbers 'relative
  )
 #+end_src
-* Bookmarks
+** Bookmarks
 #+begin_src elisp
-(setq bookmark-default-file "~/.config/doom/bookmarks") ;;default folder for bookmarks
-
+(setq
+ bookmark-default-file "~/.config/doom/bookmarks"
+ )
 (map! :leader
-      (:prefix ("b". "buffer")
-       :desc "List bookmarks"                          "L" #'list-bookmarks
-       :desc "Set bookmark"                            "m" #'bookmark-set
-       :desc "Delete bookmark"                         "M" #'bookmark-set
-       :desc "Save current bookmarks to bookmark file" "w" #'bookmark-save)
+      (:prefix ("b" . "buffer")
+       :desc "List bookmarks"  "L" #'list-bookmarks
+       :desc "Set bookmark"    "m" #'bookmark-set
+       :desc "Delete bookmark" "M" #'bookmark-delete
+       :desc "Save current bookmarks to bookmark file" "w" #'bookmark-save
+       )
       )
-;;
+#+end_src
+** Dired
+#+begin_src elisp
+(map! :leader
+      (:prefix ("d" . "dired")
+       :desc "Open dired" "d" #'dired
+       :desc "Dired jump to current" "j" #'dired-jump)
+      (:after dired
+       (:map dired-mode-map
+        :desc "Peep-dired image previews" "d p" #'peep-dired
+        :desc "Dired view file"           "d v" #'dired-view-file)))
 
-;; A buffer can get out of sync with respect to its visited file on disk if that file is changed by another program. To keep it up to date, you can enable Auto Revert mode by typing M-x auto-revert-mode, or you can set it to be turned on globally with ‘global-auto-revert-mode’.  I have also turned on Global Auto Revert on non-file buffers, which is especially useful for ‘dired’ buffers.
+(evil-define-key 'normal dired-mode-map
+  (kbd "M-RET") 'dired-display-file
+  (kbd "h") 'dired-up-directory
+  (kbd "l") 'dired-open-file ; use dired-find-file instead of dired-open.
+  (kbd "m") 'dired-mark
+  (kbd "t") 'dired-toggle-marks
+  (kbd "u") 'dired-unmark
+  (kbd "C") 'dired-do-copy
+  (kbd "D") 'dired-do-delete
+  (kbd "J") 'dired-goto-file
+  (kbd "M") 'dired-do-chmod
+  (kbd "O") 'dired-do-chown
+  (kbd "P") 'dired-do-print
+  (kbd "R") 'dired-do-rename
+  (kbd "T") 'dired-do-touch
+  (kbd "Y") 'dired-copy-filenamecopy-filename-as-kill ; copies filename to kill ring.
+  (kbd "Z") 'dired-do-compress
+  (kbd "+") 'dired-create-directory
+  (kbd "-") 'dired-do-kill-lines
+  (kbd "% l") 'dired-downcase
+  (kbd "% m") 'dired-mark-files-regexp
+  (kbd "% u") 'dired-upcase
+  (kbd "* %") 'dired-mark-files-regexp
+  (kbd "* .") 'dired-mark-extension
+  (kbd "* /") 'dired-mark-directories
+  (kbd "; d") 'epa-dired-do-decrypt
+  (kbd "; e") 'epa-dired-do-encrypt)
+
+(evil-define-key 'normal peep-dired-mode-map
+  (kbd "j") 'peep-dired-next-file
+  (kbd "k") 'peep-dired-prev-file)
+(add-hook 'peep-dired-hook 'evil-normalize-keymaps)
+#+end_src
+** Others
+*** autosave and backup
+#+begin_src elisp
+(setq
+ auto-save-default t
+ make-backup-files t
+ )
+#+end_src
+*** exit confirm
+#+begin_src elisp
+(setq
+ confirm-kill-emacs nil
+ )
+#+end_src
+*** Global auto revert
+A buffer can get out of sync with respect to its visited file on disk if that file changed by another program. To keep it up to date, you can set it to be turned on globally with 'global-auto-revert-mode'
+#+begin_src elisp
 (global-auto-revert-mode 1)
 (setq global-auto-revert-non-file-buffers 1)
 #+end_src
-* Dired
-#+begin_src elisp
-
-#+end_src
-* Latex
-Path to latex
-#+begin_src elisp
-(setenv "PATH" (concat "/usr/local/texlive/2024/bin/x86_64-linux:" (getenv "PATH")))
-(add-to-list 'exec-path "/usr/local/texlive/2024/bin/x86_64-linux")
-#+end_src
-
-* Org
+* Org mode
 ** Defaults
 #+begin_src elisp
 (after! org
   (setq
    org-directory "~/org/"
-    org-default-notes-file (expand-file-name "notes.org" org-directory)
+   org-default-notes-file (expand-file-name "notes.org" org-directory)
         ; using org-pretty instead
         ;org-ellipsis " ▼ "
         ;org-superstar-headline-bullets-list '("◉" "●" "○" "◆" "●" "○" "◆")
         ;org-superstar-item-bullet-alist '((?+ . ?➤) (?- . ?✦))
-        org-log-done 'time
-        org-hide-emphasis-markers t
+   org-log-done 'time
+   org-hide-emphasis-markers t
+   org-startup-with-inline-images t
+   org-edit-src-content-indentation 0
+   org-startup-with-latex-preview t
+   org-highlight-latex-and-related '(native script)
    )
   (setq
    org-todo-keywords
@@ -117,6 +149,26 @@ Path to latex
      (sequence "[ ]" "[-]" "|" "[X]")
      )
    )
+  (custom-set-faces!
+    `((org-document-title)
+      :foreground ,(face-attribute 'org-document-title :foreground)
+      :height 1.3 :weight bold)
+    `((org-level-1)
+      :foreground ,(face-attribute 'outline-1 :foreground)
+      :height 1.1 :weight medium)
+    `((org-level-2)
+      :foreground ,(face-attribute 'outline-2 :foreground)
+      :weight medium)
+    `((org-level-3)
+      :foreground ,(face-attribute 'outline-3 :foreground)
+      :weight medium)
+    `((org-level-4)
+      :foreground ,(face-attribute 'outline-4 :foreground)
+      :weight medium)
+    `((org-level-5)
+      :foreground ,(face-attribute 'outline-5 :foreground)
+      :weight medium)
+    )
   )
 #+end_src
 ** Org Agenda
@@ -131,120 +183,111 @@ Path to latex
    )
   )
 #+end_src
-** Org Pretty (+pretty)
+** Org Latex Previews
 #+begin_src elisp
 (after! org
-  (add-hook 'org-mode-hook #'+org-pretty-mode)
-  )
-#+end_src
-** Org Download (+dragndrop)
-#+begin_src elisp
-(after! org
-  (org-display-inline-images 1)
+  (dolist (pkg '("amsmath" "amssymb" "mathtools" "mathrsfs" "tikz" "pgfplots"))
+    (add-to-list 'org-latex-packages-alist `("" ,pkg t))))
+
+(use-package! org-latex-preview
+  :after org
+  :config
+  (plist-put org-latex-preview-appearance-options
+             :page-width 0.8)
+  (add-hook 'org-mode-hook 'org-latex-preview-auto-mode)
+  (setq org-latex-preview-auto-ignored-commands
+        '(next-line previous-line mwheel-scroll ultra-scroll
+          scroll-up-command scroll-down-command
+          evil-scroll-up evil-scroll-down evil-scroll-line-up evil-scroll-line-down)
+        org-latex-preview-numbered t
+        org-latex-preview-live t
+        org-latex-preview-live-debounce 0.25)
   )
 #+end_src
 ** Org Roam
 #+begin_src elisp
-(after! org
-  (setq
-   org-roam-directory "~/org/Roam/"
-   org-roam-db-location "~/org/Roam/org-roam.db"
-   org-roam-completion-everywhere 1
-   )
-
+(use-package! org-roam
+  :defer t
+  :config
+  (setq org-roam-directory (file-truename "~/org/Roam")
+        org-roam-db-location (file-truename "~/org/Roam/org-roam.db")
+        org-attach-id-dir "assets/"
+        org-roam-completion-everywhere 1
+        )
+  (org-roam-db-autosync-enable)
   (setq org-roam-capture-templates '(
-        ("d" "default" plain
-         "\n%?"
-         :if-new (file+head "default-${slug}.org" "#+title: ${title}\n#+date: %U\n\n")
-         :unnarrowed t
-         )
-        ("p" "project" plain
-         "\n* Goals\n%?\n\n* Tasks\n** TODO Add initial tasks\n\n* Dates\n"
-         :if-new (file+head "project-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags: project\n\n")
-         :unnarrowed t
-         )
-        ("u" "uni" plain
-         "\n%"
-         :if-new (file+head "RoamAGH/uni-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags: :uni:s25:\n#+startup: latexpreview\n\n")
-         :unarrowed t
-         )
+                                     ("d" "default" plain
+                                      "\n%?"
+                                      :if-new (file+head "default-${slug}.org" "#+title: ${title}\n#+date: %U\n\n")
+                                      :unnarrowed t
+                                      )
+                                     ("p" "project" plain
+                                      "\n* Goals\n%?\n\n* Tasks\n** TODO Add initial tasks\n\n* Dates\n"
+                                      :if-new (file+head "Projects/project-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags: project\n\n")
+                                      :unnarrowed t
+                                      )
+                                     ("u" "CS" plain
+                                      "\n%"
+                                      :if-new (file+head "CS/uni-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags: :uni:s25:\n#+startup: latexpreview\n\n")
+                                      :unarrowed t
+                                      )
 
-        ("c" "media")
-        ("cb" "book notes" plain
-         "\n* Source\n- Author: %^{Author}\n- Title: ${title}\n- Year: %^{Year}\n- Reading start: %^{Reading start}\n- Reading end: %^{Reading end}\n\n* Summary\n%?"
-         :if-new (file+head "book-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags: book\n\n")
-         :unnarrowed t
-         )
-        ("cp" "podacst" plain
-         "\n* Source\n - Author: %^{Author}\n - Title: ${title}\n - Link: %^{Link}\n\n* Summary\n%?"
-         :if-new (file+head "podcast-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags: podcast\n\n")
-         :unarrowed t
-         )
-        ("cf" "film" plain
-         "\n* Source\n - Link: %^{Link}\n - Title: ${title}\n\n* Summary\n%?"
-         :if-new (file+head "film-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags: film\n\n")
-         :unarrowed t
-         )
-        ("ca" "article" plain
-         "\n* Source\n - Link: %^{Link}\n - Title: ${title}\n\n* Summary\n%?"
-         :if-new (file+head "article-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags: article\n\n")
-         :unarrowed t
-         )
+                                     ("c" "media")
+                                     ("cb" "book notes" plain
+                                      "\n\n* Source\n- Author: %^{Author}\n- Title: ${title}\n- Year: %^{Year}\n- Reading start: %^{Reading start}\n- Reading end: %^{Reading end}\n\n* Summary\n%?"
+                                      :if-new (file+head "Media/Books/book-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags:\n\n")
+                                      :unnarrowed t
+                                      )
+                                     ("cp" "podcast" plain
+                                      "\n\n* Source\n - Author: %^{Author}\n - Title: ${title}\n - Link: %^{Link}\n\n* Summary\n%?"
+                                      :if-new (file+head "Media/Podcasts/podcast-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags:\n\n")
+                                      :unarrowed t
+                                      )
+                                     ("cf" "film" plain
+                                      "\n\n* Source\n - Link: %^{Link}\n - Title: ${title}\n\n* Summary\n%?"
+                                      :if-new (file+head "Media/Films/film-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags:\n\n")
+                                      :unarrowed t
+                                      )
+                                     ("ca" "article" plain
+                                      "\n\n* Source\n - Link: %^{Link}\n - Title: ${title}\n\n* Summary\n%?"
+                                      :if-new (file+head "Media/Articles/article-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags:\n\n")
+                                      :unarrowed t
+                                      )
+                                     )
         )
-        )
-   (map! :leader
-         (:prefix ("n r" . "org-roam")
+  (map! :leader
+        (:prefix ("n r" . "org-roam")
           :desc "Open Org-roam UI"    "u" #'org-roam-ui-open
           :desc "Add a tag to node"   "t" #'org-roam-tag-add
           :desc "Create a heading node" "h" #'org-id-get-create
           )
          )
   )
+
+(use-package! websocket
+  :after org-roam)
 #+end_src
-** Org Roam UI
+*** Org Roam UI
 #+begin_src elisp
 (use-package! org-roam-ui
-    :after org ;; or :after org-roam
-;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
-;;         a hookable mode anymore, you're advised to pick something yourself
-;;         if you don't care about startup time, use
-;;  :hook (after-init . org-roam-ui-mode)
-    :config
-    (setq
-     org-roam-db-autosync-mode 1
-     org-roam-ui-sync-theme 1
-     org-roam-ui-follow 1
-     org-roam-ui-update-on-save 1
-     org-roam-ui-open-on-start 1
-     )
-    )
-#+end_src
-** Org Latex Previews
-#+begin_src elisp
-(after! org
-  (add-hook 'org-mode 'org-latex-preview-auto-mode)
-  (setq
-   ;org-startup-with-latex-preview t
-   org-latex-preview-numbered t
-   org-latex-preview-live t
-   org-latex-preview-live-debounce 0.25
-   org-latex-preview-auto-ignored-commands '(next-line previous-line mwhell-scroll scroll-up-command scroll-down-command)
-   org-latex-preview-live-display-type 'buffer
-   org-latex-preview-appearance-options '(
-                                          :foreground auto
-                                          :background "Transparent"
-                                          :scale 1.6 :zoom 1.3
-                                          :page-width 0.8
-                                          :matchers ("begin" "$1" "$" "$$" "\\(" "\\[")
-                                          )
-   ;org-latex-preview-preamble '(
-                                ;"\\documentclass{article}\12\\usepackage[utf8]{inputenc}\12\\usepackage{geometry}\12\\usepackage{xcolor}"
-   ;                             )
-   )
-    )
-#+end_src
-* PDF
-Firstly "M-x package-install pdf-tools-install" -> epdfinfo
-#+begin_src elisp
-;(add-to-list 'auto-mode-alist '("\\.pdf\\'" . pdf-view-mode))
+  :after org-roam
+  :config
+  (setq org-roam-ui-sync-theme t
+        org-roam-ui-follow t
+        org-roam-ui-update-on-save t
+        org-roam-ui-open-on-start t
+        org-roam-mode-sections
+        (list #'org-roam-backlinks-section
+              #'org-roam-reflinks-section
+              #'org-roam-unlinked-references-section)
+        org-latex-preview-appearance-options '(
+                                               :foreground auto
+                                               :background "Transparent"
+                                               :scale 1.7
+                                               :zoom 1.4
+                                               :page-width 0.8
+                                               :matchers ("begin" "$1" "$" "$$" "\\(" "\\[")
+                                               )
+        )
+  )
 #+end_src

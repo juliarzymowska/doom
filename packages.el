@@ -47,7 +47,8 @@
 ;; (unpin! pinned-package another-pinned-package)
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
 ;; (unpin! t)
-
+(unpin! org)
+(unpin! org-roam)
 (package! org :recipe
   (:host nil :repo "https://git.tecosaur.net/mirrors/org-mode.git" :remote "mirror" :fork
          (:host nil :repo "https://git.tecosaur.net/tec/org-mode.git" :branch "dev" :remote "tecosaur")
@@ -72,8 +73,6 @@
               "(provide 'org-version)\n"))))
   :pin nil)
 
-(unpin! org)
-(unpin! org-roam)
 (package! org-roam-ui)
 (package! beacon)
 (package! evil-tutor)
