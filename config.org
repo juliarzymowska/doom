@@ -211,7 +211,7 @@ A buffer can get out of sync with respect to its visited file on disk if that fi
   :config
   (setq org-roam-directory (file-truename "~/org/Roam")
         org-roam-db-location (file-truename "~/org/Roam/org-roam.db")
-        org-attach-id-dir "assets/"
+        org-attach-id-dir "~/org/.attach/"
         org-roam-completion-everywhere 1
         )
   (org-roam-db-autosync-enable)
@@ -223,16 +223,16 @@ A buffer can get out of sync with respect to its visited file on disk if that fi
                                       )
                                      ("p" "project" plain
                                       "\n* Goals\n%?\n\n* Tasks\n** TODO Add initial tasks\n\n* Dates\n"
-                                      :if-new (file+head "Projects/project-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags: project\n\n")
+                                      :if-new (file+head "Projects/project-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags:\n\n")
                                       :unnarrowed t
                                       )
                                      ("u" "CS" plain
                                       "\n%"
-                                      :if-new (file+head "CS/uni-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags: :uni:s25:\n#+startup: latexpreview\n\n")
+                                      :if-new (file+head "CS/uni-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags: :s25:\n\n\n")
                                       :unarrowed t
                                       )
 
-                                     ("c" "media")
+                                     ("c" "media") ;; top folder
                                      ("cb" "book notes" plain
                                       "\n\n* Source\n- Author: %^{Author}\n- Title: ${title}\n- Year: %^{Year}\n- Reading start: %^{Reading start}\n- Reading end: %^{Reading end}\n\n* Summary\n%?"
                                       :if-new (file+head "Media/Books/book-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags:\n\n")
@@ -243,8 +243,14 @@ A buffer can get out of sync with respect to its visited file on disk if that fi
                                       :if-new (file+head "Media/Podcasts/podcast-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags:\n\n")
                                       :unarrowed t
                                       )
-                                     ("cf" "film" plain
+                                     ("cf" "film") ;; film folder
+                                     ("cfv" "yt video" plain
                                       "\n\n* Source\n - Link: %^{Link}\n - Title: ${title}\n\n* Summary\n%?"
+                                      :if-new (file+head "Media/Videos/video-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags:\n\n")
+                                      :unarrowed t
+                                      )
+                                     ("cff" "film" plain
+                                      "\n\n* Source\n - Title: ${title}\n\n* Summary\n%?"
                                       :if-new (file+head "Media/Films/film-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags:\n\n")
                                       :unarrowed t
                                       )
@@ -281,7 +287,7 @@ A buffer can get out of sync with respect to its visited file on disk if that fi
               #'org-roam-reflinks-section
               #'org-roam-unlinked-references-section)
         org-latex-preview-appearance-options '(
-                                               :foreground auto
+                                               :foreground "White"
                                                :background "Transparent"
                                                :scale 1.7
                                                :zoom 1.4
