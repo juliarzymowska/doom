@@ -6,6 +6,7 @@
   - [[#visuals][Visuals]]
   - [[#bookmarks][Bookmarks]]
   - [[#dired][Dired]]
+  - [[#centaur-tabs][Centaur Tabs]]
   - [[#others][Others]]
 - [[#org-mode][Org mode]]
   - [[#defaults][Defaults]]
@@ -45,6 +46,7 @@
 ;; (set-frame-parameter (selected-frame) 'alpha '(94 . 95))
 (add-to-list 'default-frame-alist '(alpha . (96 . 97)))
 #+end_src
+
 ** Bookmarks
 #+begin_src elisp
 (setq
@@ -118,7 +120,7 @@
         :desc "Dired view file"           "d v" #'dired-view-file)
 
   (setq dired-guess-shell-alist-user
-        '(("\\.pdf\\'" "zathura")
+  '(("\\.pdf\\'" "zathura")
           ("\\.\\(mp4\\|mkv\\|webm\\|avi\\)\\'" "vlc")
           ("\\.\\(png\\|jpe?g\\|gif\\)\\'" "gwenview"))))
 
@@ -128,6 +130,20 @@
         :n "j" #'peep-dired-next-file
         :n "k" #'peep-dired-prev-file))
 #+end_src
+** Centaur Tabs
+#+begin_src elisp
+(after! centaur-tabs
+  (map! :map centaur-tabs-mode-map
+        :n "M-<left>" #'centaur-tabs-backward
+        :n "M-<right>" #'centaur-tabs-forward
+        :n "M-q" #'kill-current-buffer
+        :n "M-n" #'+doom-dashboard/open
+        :n "M-S-<right>" #'centaur-tabs-move-current-tab-to-right
+        :n "M-S-<" #'centaur-tabs-move-current-tab-to-left
+        )
+  )
+#+end_src
+
 ** Others
 #+begin_src elisp
 (setq
@@ -145,7 +161,7 @@
 #+begin_src elisp
 (after! org
   (setq
-   org-directory "~/org/"
+   org-directory "~/Org/"
    org-default-notes-file (expand-file-name "notes.org" org-directory)
    org-log-done 'time
    org-hide-emphasis-markers t
@@ -189,7 +205,7 @@
 (after! org
   (setq
    ;; org-agenda-files (directory-files-recursively (concat org-directory "Roam") "\\.org$")
-;;   org-agenda-files (org-directory (concat "schedule.org"))
+   org-agenda-files (directory-files-recursively org-directory "schedule.org" "todo.org")
    org-agenda-start-day "+0d"
    org-agenda-skip-timestamp-if-done 1
    org-agenda-skip-deadline-if-done 1
@@ -259,11 +275,11 @@
   :after org
   :config
   (setq
-   org-roam-directory (file-truename "~/org/Roam")
-   org-roam-db-location (file-truename "~/org/Roam/org-roam.db")
-   org-attach-id-dir "~/org/.attach/"
+   org-roam-directory (file-truename "~/Org/Roam")
+   org-roam-db-location (file-truename "~/Org/Roam/org-roam.db")
+   org-attach-id-dir "~/Org/.attach/"
    org-roam-completion-everywhere 1
-   org-roam-dailies-directory "~/org/Roam/Daily")
+   org-roam-dailies-directory "~/Org/Roam/Daily")
 
   (org-roam-db-autosync-enable)
   (setq org-roam-db-node-include-function
@@ -278,17 +294,15 @@
                                  :unnarrowed t
                                  )
                                 ("p" "project" plain
-                                 (file "~/org/Settings/Templates/ProjectTemplate.org")
+                                 (file "~/Org/Settings/Templates/ProjectTemplate.org")
                                  :if-new (file+head "Projects/project-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags:\n\n")
                                  :unnarrowed t
                                  )
                                 ("u" "AGH_CS" plain
-                                 (file "~/org/Settings/Templates/CSTemplate.org")
                                  :if-new (file+head "AGH_CS/uni-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags:\n\n\n")
                                  :unarrowed t
                                  )
                                 ("s" "CS" plain
-                                 (file "~/org/Settings/Templates/CSTemplate.org")
                                  :if-new (file+head "CS/cs-${slug}.org" "#+title: ${title}\n#+date: %U\n#+filetags:\n\n\n")
                                  :unarrowed t
                                  )
@@ -347,6 +361,7 @@
               #'org-roam-unlinked-references-section)))
 #+end_src
 ** Org Transclusion
+todo
 #+begin_src elisp
 ;; (use-package! org-transclusion
 ;;   :after org

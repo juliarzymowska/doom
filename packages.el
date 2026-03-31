@@ -77,3 +77,4 @@
 (package! evil-tutor)
 (package! org-transclusion)
 (package! org-gcal)
+(package! org-special-block-extras)
